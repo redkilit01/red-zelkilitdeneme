@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#111">
+<title>RedKilit - Asker Süre Hesaplama</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;font-family:Arial,sans-serif;background:#f2f2f2;color:#222}
+.wrap{width:min(1180px,100%);margin:auto;padding:16px}
+.brand{text-align:center;color:#b00020;font-weight:700;letter-spacing:3px;font-size:18px}
+.byline{text-align:center;color:#777;font-size:12px;margin:3px 0 8px}
+h1{text-align:center;font-size:28px;margin:8px 0}
+.sub{text-align:center;color:#666;margin-bottom:16px}
+.columns{display:grid;grid-template-columns:1.35fr 1fr;gap:16px}
+.box{background:#fff;border:1px solid #aaa;border-radius:8px;margin:0 0 12px;padding:14px}
+legend{font-weight:700;padding:0 6px}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:10px}
+.item{min-width:0}
+label{display:block;font-weight:600;font-size:14px;margin-bottom:4px}
+select,input{width:100%;height:38px;padding:6px 8px;border:1px solid #999;border-radius:4px;background:#fff;font-size:15px}
+.speed{font-weight:700;color:#008b55;font-size:18px}
+.speeditem{display:flex;align-items:center;justify-content:flex-end;gap:8px}
+.speeditem label{margin:0}
+button{padding:10px 16px;margin:4px;border:1px solid #888;border-radius:5px;background:#fff;font-size:15px}
+.primary{background:#222;color:#fff}
+.result{margin:9px 0}
+.result b{display:inline-block;min-width:175px}
+.big{font-weight:700;font-size:18px}
+.time{display:flex;align-items:center;gap:4px}
+.time select{width:72px}
+.footer{text-align:center;color:#888;padding:10px}
+@media(max-width:800px){
+ .wrap{padding:10px}
+ h1{font-size:23px}
+ .columns{grid-template-columns:1fr}
+ .row{grid-template-columns:1fr 1fr;gap:8px}
+ .box{padding:11px}
+ .result b{min-width:140px}
+}
+@media(max-width:480px){
+ .row{grid-template-columns:1fr}
+ .speeditem{justify-content:space-between}
+ button{width:calc(50% - 10px)}
+ .result b{display:block;margin-bottom:3px}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+<div class="brand">REDKİLİT</div>
+<div class="byline">by Aynasiz</div>
+<h1>ASKER SÜRE HESAPLAMA</h1>
+<div class="sub">Asker hareket hızı ve koordinat mesafesine göre hesaplama</div>
+
+<div class="columns">
+<div>
+<fieldset class="box">
+<legend>Asker Seçimi</legend>
+<div class="row">
+<div class="item"><label for="irk">Irk</label>
+<select id="irk">
+<option value="HUN">HUN</option>
+<option value="GOK">GÖKTÜRK</option>
+<option value="SEL">SELÇUKLU</option>
+</select></div>
+<div class="item"><label for="asker">Asker</label>
+<select id="asker"></select></div>
+</div>
+<div class="speeditem"><label>Asker Hızı</label><span id="speed" class="speed">-</span></div>
+</fieldset>
+
+<fieldset class="box">
+<legend>Koordinatlar</legend>
+<div class="row">
+<div class="item"><label for="x1">X1 (Başlangıç)</label><input id="x1" type="text" inputmode="decimal"></div>
+<div class="item"><label for="y1">Y1 (Başlangıç)</label><input id="y1" type="text" inputmode="decimal"></div>
+</div>
+<div class="row">
+<div class="item"><label for="x2">X2 (Hedef)</label><input id="x2" type="text" inputmode="decimal"></div>
+<div class="item"><label for="y2">Y2 (Hedef)</label><input id="y2" type="text" inputmode="decimal"></div>
+</div>
+</fieldset>
+
+<div class="box"><b>% 50 HIZLANDIRMA</b>
+<select id="boost50"><option value="KAPALI">KAPALI</option><option value="ACIK">AÇIK</option></select></div>
+<button class="primary" onclick="calculate()">HESAPLA</button>
+<button onclick="clearAll()">TEMİZLE</button>
+
+<fieldset class="box">
+<legend>Sonuç</legend>
+<div class="result"><b>Mesafe</b><span id="distance">-</span></div>
+<div class="result"><b>Süre (Saniye)</b><span id="seconds">-</span></div>
+<div class="result"><b>Süre</b><span id="duration" class="big">-</span></div>
+</fieldset>
+
+<fieldset class="box">
+<legend>Geri Dönüş Zamanı</legend>
+<div class="result time"><b>Rapor Saati</b>
+<select id="rh"></select>:<select id="rm"></select>:<select id="rs"></select></div>
+<div class="result"><b>Yol Süresi</b><span id="totalDuration" class="big">-</span></div>
+<div class="result"><b>Geri Dönüş Saati</b><span id="returnTime" class="big">-</span></div>
+<div class="result"><span id="diamond" class="big">-</span></div>
+</fieldset>
+</div>
+
+<div>
+<fieldset class="box">
+<legend>Kilit Atılacak Hedef</legend>
+<div class="row">
+<div class="item"><label for="kir">Irk</label>
+<select id="kir">
+<option value="HUN">HUN</option>
+<option value="GOK">GÖKTÜRK</option>
+<option value="SEL">SELÇUKLU</option>
+</select></div>
+<div class="item"><label for="kasker">Asker</label>
+<select id="kasker"></select></div>
+</div>
+<div class="speeditem"><label>Asker Hızı</label><span id="kspeed" class="speed">-</span></div>
+<hr>
+<div class="row">
+<div class="item"><label for="kx1">X1 (Başlangıç)</label><input id="kx1" type="text" inputmode="decimal"></div>
+<div class="item"><label for="ky1">Y1 (Başlangıç)</label><input id="ky1" type="text" inputmode="decimal"></div>
+</div>
+<div class="row">
+<div class="item"><label for="kx2">X2 (Hedef)</label><input id="kx2" type="text" inputmode="decimal"></div>
+<div class="item"><label for="ky2">Y2 (Hedef)</label><input id="ky2" type="text" inputmode="decimal"></div>
+</div>
+<div class="box" style="margin-top:8px"><b>% 50 HIZLANDIRMA</b>
+<select id="lockBoost50"><option value="KAPALI">KAPALI</option><option value="ACIK">AÇIK</option></select></div>
+<button class="primary" onclick="lockCalc()">KİLİT SÜRESİNİ HESAPLA</button>
+<div class="result"><b>Kilit Mesafesi</b><span id="kdist">-</span></div>
+<div class="result"><b>Kilit Süresi (Saniye)</b><span id="ksec">-</span></div>
+<div class="result"><b>Kilit Süresi</b><span id="kdur" class="big">-</span></div>
+<div class="result time"><b>Geri Dönüş Saati</b>
+<select id="krh"></select>:<select id="krm"></select>:<select id="krs"></select></div>
+<div class="result"><b>Yola Çıkış Saati</b><span id="departure" class="big">-</span></div>
+</fieldset>
+</div>
+</div>
+<div class="footer">RedKilit</div>
+</div>
+
+<script>
+const races={
+ HUN:{names:["TAYGUN","KEMANKEŞ","TARIK","BARLAS","TUNGA","TALAK","TARKAN","MANCINIK","TOP"],speed:[125,145,110,135,175,230,195,50,60]},
+ GOK:{names:["KARABUDUN","KEMANKEŞ","TAPUKÇI","MAVİŞ","MUHAFIZ","MAVİ ATLI","KÜRŞAD","MANCINIK","TOP"],speed:[120,140,100,130,150,200,180,50,60]},
+ SEL:{names:["GULAM","KEMANKEŞ","SELÇUK","ALP ARSLAN","KARIGLI","ATLI OKÇU","SİPAHİ","MANCINIK","TOP"],speed:[115,135,105,125,160,225,175,50,60]}
+};
+function $(id){return document.getElementById(id)}
+function setSoldiers(raceId,soldierId,speedId){
+ const data=races[$(raceId).value], sel=$(soldierId);
+ sel.innerHTML="";
+ data.names.forEach((name,i)=>sel.add(new Option(name,i)));
+ sel.selectedIndex=0;
+ $(speedId).textContent=data.speed[0];
+}
+function updateSpeed(raceId,soldierId,speedId){
+ const data=races[$(raceId).value], i=$(soldierId).selectedIndex;
+ $(speedId).textContent=data.speed[i] ?? "-";
+}
+function fillTime(id,max){
+ const s=$(id); s.innerHTML="";
+ for(let i=0;i<max;i++)s.add(new Option(String(i).padStart(2,"0"),i));
+}
+function num(id){return parseFloat($(id).value.replace(",","."))}
+function dist(x1,y1,x2,y2){return Math.hypot(x2-x1,y2-y1)}
+function fmt(n){return n.toFixed(2).replace(".",",")}
+function duration(sec){
+ sec=Math.max(0,Math.floor(sec));
+ const h=Math.floor(sec/3600),m=Math.floor((sec%3600)/60),s=sec%60;
+ return h?`${h} saat ${m} dakika ${s} saniye`:`${m} dakika ${s} saniye`;
+}
+function timeSeconds(h,m,s){return +$(h).value*3600 + +$(m).value*60 + +$(s).value}
+function timeText(t){
+ t=((t%86400)+86400)%86400;
+ return [Math.floor(t/3600),Math.floor(t/60)%60,t%60].map(x=>String(x).padStart(2,"0")).join(":");
+}
+function calculate(){
+ const x1=num("x1"),y1=num("y1"),x2=num("x2"),y2=num("y2"),sp=+$("speed").textContent;
+ if([x1,y1,x2,y2].some(Number.isNaN)){alert("Koordinatları doldurun.");return}
+ let sec=Math.ceil(dist(x1,y1,x2,y2)/sp*30);
+ if($("boost50").value==="ACIK")sec=Math.ceil(sec/2);
+ $("distance").textContent=fmt(dist(x1,y1,x2,y2));$("seconds").textContent=sec;
+ $("duration").textContent=duration(sec);$("totalDuration").textContent=duration(sec);
+ $("returnTime").textContent=timeText(timeSeconds("rh","rm","rs")+sec);
+ $("diamond").textContent="Elmaslı çıkış: "+timeText(timeSeconds("rh","rm","rs")+sec-Math.floor(sec/2));
+}
+function lockCalc(){
+ const x1=num("kx1"),y1=num("ky1"),x2=num("kx2"),y2=num("ky2"),sp=+$("kspeed").textContent;
+ if([x1,y1,x2,y2].some(Number.isNaN)){alert("Kilit koordinatlarını doldurun.");return}
+ const d=dist(x1,y1,x2,y2);let sec=Math.ceil(d/sp*30);
+ if($("lockBoost50").value==="ACIK")sec=Math.ceil(sec/2);
+ $("kdist").textContent=fmt(d);$("ksec").textContent=sec;$("kdur").textContent=duration(sec);
+ $("departure").textContent=timeText(timeSeconds("krh","krm","krs")-sec);
+}
+function clearAll(){
+ ["x1","y1","x2","y2","kx1","ky1","kx2","ky2"].forEach(id=>$(id).value="");
+ ["distance","seconds","duration","totalDuration","returnTime","diamond","kdist","ksec","kdur","departure"].forEach(id=>$(id).textContent="-");
+}
+function init(){
+ setSoldiers("irk","asker","speed");setSoldiers("kir","kasker","kspeed");
+ fillTime("rh",24);fillTime("krh",24);fillTime("rm",60);fillTime("rs",60);fillTime("krm",60);fillTime("krs",60);
+ $("irk").onchange=()=>setSoldiers("irk","asker","speed");
+ $("kir").onchange=()=>setSoldiers("kir","kasker","kspeed");
+ $("asker").onchange=()=>updateSpeed("irk","asker","speed");
+ $("kasker").onchange=()=>updateSpeed("kir","kasker","kspeed");
+ ["rh","rm","rs"].forEach(id=>$(id).onchange=()=>{if($("seconds").textContent!=="-")calculate()});
+}
+init();
+</script>
+</body>
+</html>
